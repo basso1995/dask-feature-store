@@ -28,25 +28,28 @@ requirements_path = shutil.copy("requirements.txt", PROJECT_PATH)
 
 init_script = f"""
 #!/bin/bash
-# CREATE DIRECTORY ON DBFS FOR LOGS
-LOG_DIR=/dbfs/databricks/scripts/logs/$DB_CLUSTER_ID/dask/
-HOSTNAME=`hostname`
-mkdir -p $LOG_DIR
-# INSTALL DASK AND OTHER DEPENDENCIES
-set -ex
 pip install --extra-index-url https://${{JFROG_USERNAME}}:${{JFROG_PASSWORD}}@prima.jfrog.io/artifactory/api/pypi/primapy/simple -r {requirements_path}
 
-# START DASK – ON DRIVER NODE START THE SCHEDULER PROCESS 
-# ON WORKER NODES START WORKER PROCESSES
-if [[ $DB_IS_DRIVER = "TRUE" ]]; then
-  dask-scheduler &>/dev/null &
-  echo $! > $LOG_DIR/dask-scheduler.$HOSTNAME.pid
-  pip install --extra-index-url https://${{JFROG_USERNAME}}:${{JFROG_PASSWORD}}@prima.jfrog.io/artifactory/api/pypi/primapy/simple -r {requirements_path}
-else
-  dask-worker tcp://$DB_DRIVER_IP:8786 --nprocs 4 --nthreads 8 &>/dev/null &
-  echo $! > $LOG_DIR/dask-worker.$HOSTNAME.pid
-  pip install --extra-index-url https://${{JFROG_USERNAME}}:${{JFROG_PASSWORD}}@prima.jfrog.io/artifactory/api/pypi/primapy/simple -r {requirements_path}
-fi
+# IGNORE THIS, taken from https://medium.com/behindthewires/dask-on-azure-databricks-37b5a1537595
+# # CREATE DIRECTORY ON DBFS FOR LOGS
+# LOG_DIR=/dbfs/databricks/scripts/logs/$DB_CLUSTER_ID/dask/
+# HOSTNAME=`hostname`
+# mkdir -p $LOG_DIR
+# # INSTALL DASK AND OTHER DEPENDENCIES
+# set -ex
+# pip install --extra-index-url https://${{JFROG_USERNAME}}:${{JFROG_PASSWORD}}@prima.jfrog.io/artifactory/api/pypi/primapy/simple -r {requirements_path}
+
+# # START DASK – ON DRIVER NODE START THE SCHEDULER PROCESS 
+# # ON WORKER NODES START WORKER PROCESSES
+# if [[ $DB_IS_DRIVER = "TRUE" ]]; then
+#   dask-scheduler &>/dev/null &
+#   echo $! > $LOG_DIR/dask-scheduler.$HOSTNAME.pid
+#   pip install --extra-index-url https://${{JFROG_USERNAME}}:${{JFROG_PASSWORD}}@prima.jfrog.io/artifactory/api/pypi/primapy/simple -r {requirements_path}
+# else
+#   dask-worker tcp://$DB_DRIVER_IP:8786 --nprocs 4 --nthreads 8 &>/dev/null &
+#   echo $! > $LOG_DIR/dask-worker.$HOSTNAME.pid
+#   pip install --extra-index-url https://${{JFROG_USERNAME}}:${{JFROG_PASSWORD}}@prima.jfrog.io/artifactory/api/pypi/primapy/simple -r {requirements_path}
+# fi
 """
 
 init_script_path = PROJECT_PATH / "startup.sh"

@@ -8,7 +8,7 @@ import dask.bag as db
 
 from dask.distributed import Client
 
-client = Client('127.0.0.1:8786')
+client = Client(n_workers=6, threads_per_worker=6)
 client
 
 # COMMAND ----------
@@ -41,6 +41,21 @@ result.compute()
 # COMMAND ----------
 
 result.visualize()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## more stuff
+
+# COMMAND ----------
+
+import dask
+
+df = dask.datasets.timeseries(end="2001")
+
+# COMMAND ----------
+
+df.count().compute()
 
 # COMMAND ----------
 
