@@ -41,9 +41,11 @@ pip install --extra-index-url https://${{JFROG_USERNAME}}:${{JFROG_PASSWORD}}@pr
 if [[ $DB_IS_DRIVER = "TRUE" ]]; then
   dask-scheduler &>/dev/null &
   echo $! > $LOG_DIR/dask-scheduler.$HOSTNAME.pid
+  pip install --extra-index-url https://${{JFROG_USERNAME}}:${{JFROG_PASSWORD}}@prima.jfrog.io/artifactory/api/pypi/primapy/simple -r {requirements_path}
 else
   dask-worker tcp://$DB_DRIVER_IP:8786 --nprocs 4 --nthreads 8 &>/dev/null &
   echo $! > $LOG_DIR/dask-worker.$HOSTNAME.pid
+  pip install --extra-index-url https://${{JFROG_USERNAME}}:${{JFROG_PASSWORD}}@prima.jfrog.io/artifactory/api/pypi/primapy/simple -r {requirements_path}
 fi
 """
 
