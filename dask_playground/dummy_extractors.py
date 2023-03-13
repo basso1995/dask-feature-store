@@ -9,12 +9,12 @@ APPLICATION_DATA_PATH = "s3://prima-uk-pricing-engine-pii-staging/bass_tests/app
 
 # COMMAND ----------
 
-# application = spark.read.table(APPLICATION_TABLE).limit(1000)
-# application.count()
+application = spark.read.table(APPLICATION_TABLE).limit(10000)
+application.count()
 
 # COMMAND ----------
 
-# application.write.mode('overwrite').parquet(APPLICATION_DATA_PATH)
+application.write.mode('overwrite').parquet(APPLICATION_DATA_PATH)
 
 # COMMAND ----------
 
@@ -39,13 +39,20 @@ application_bag = application.to_bag(index=True, format="dict")
 
 # COMMAND ----------
 
+from datetime import datetime
+
 def acorn_group(dataset):
     return {"acorn.group": dataset["acorn"]["group"]}
+
+def quote_hour(dataset):
+    quote_timestamp = datetime.fromisoformat(dataset["meta"]["original_quote_timestamp"][:-8])
+    return {"quote_hour": quote_timestamp.hour}
 
 # COMMAND ----------
 
 EXTRACTORS = {
-    acorn_group
+    acorn_group,
+    quote_hour
 }
 
 
@@ -94,6 +101,19 @@ historical_features = application_bag.map(process_historical_application).to_dat
 # COMMAND ----------
 
 historical_features.head()
+
+# COMMAND ----------
+
+len(historical_features)
+
+# COMMAND ----------
+
+quote_hour_per_group = historical_features.groupby("acorn.group").agg({"quote_hour": "mean"}).compute()
+quote_hour_per_group
+
+# COMMAND ----------
+
+type(quote_hour_per_group)
 
 # COMMAND ----------
 
